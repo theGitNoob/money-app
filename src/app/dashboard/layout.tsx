@@ -52,7 +52,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen">
+      <div className="flex min-h-screen w-full">
         <Sidebar>
           <SidebarHeader>
              <div className="flex items-center gap-2 p-2">
@@ -71,7 +71,7 @@ export default function DashboardLayout({
             </div>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
+        <SidebarInset className="flex flex-1 flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <SidebarTrigger className="md:hidden" />
             <div className="w-full flex-1">
@@ -80,7 +80,7 @@ export default function DashboardLayout({
             <AddTransactionDialog />
             <UserNav />
           </header>
-          <main className="flex-1 p-4 sm:p-6 lg:pl-[var(--sidebar-width)]">
+          <main className="flex-1 p-4 sm:p-6">
             {children}
           </main>
         </SidebarInset>

@@ -13,7 +13,40 @@ import {
   DollarSign,
   HelpCircle,
 } from 'lucide-react';
-import type { Category } from './types';
+import type { Category, Currency } from './types';
+
+export const CURRENCIES: Currency[] = [
+  'USD',
+  'CUP', 
+  'EUR',
+  'GBP',
+  'CAD',
+  'AUD',
+  'JPY',
+  'CHF',
+];
+
+export const CURRENCY_SYMBOLS: Record<Currency, string> = {
+  USD: '$',
+  CUP: '$',
+  EUR: '€',
+  GBP: '£',
+  CAD: 'C$',
+  AUD: 'A$',
+  JPY: '¥',
+  CHF: 'CHF',
+};
+
+export const CURRENCY_NAMES: Record<Currency, string> = {
+  USD: 'US Dollar',
+  CUP: 'Cuban Peso',
+  EUR: 'Euro',
+  GBP: 'British Pound',
+  CAD: 'Canadian Dollar',
+  AUD: 'Australian Dollar',
+  JPY: 'Japanese Yen',
+  CHF: 'Swiss Franc',
+};
 
 export const CATEGORIES: Category[] = [
   'Groceries',

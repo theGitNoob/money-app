@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Home, List, Calendar, FileText } from 'lucide-react';
+import { Home, List, Calendar, FileText, Users } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/dashboard/transactions', label: 'Transactions', icon: List },
   { href: '/dashboard/calendar', label: 'Calendar', icon: Calendar },
   { href: '/dashboard/reports', label: 'Reports', icon: FileText },
+  { href: '/dashboard/groups', label: 'Groups', icon: Users },
 ];
 
 export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {

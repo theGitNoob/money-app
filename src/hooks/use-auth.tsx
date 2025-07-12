@@ -19,8 +19,8 @@ const auth = getAuth(app);
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signInWithEmail: typeof signInWithEmailAndPassword;
-  signUpWithEmail: typeof createUserWithEmailAndPassword;
+  signInWithEmail: (email: string, password: string) => Promise<any>;
+  signUpWithEmail: (email: string, password: string) => Promise<any>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -64,8 +64,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     user,
     loading,
-    signInWithEmail: (email, password) => signInWithEmailAndPassword(auth, email, password),
-    signUpWithEmail: (email, password) => createUserWithEmailAndPassword(auth, email, password),
+    signInWithEmail: (email: string, password: string) => signInWithEmailAndPassword(auth, email, password),
+    signUpWithEmail: (email: string, password: string) => createUserWithEmailAndPassword(auth, email, password),
     signInWithGoogle,
     signOut,
   };

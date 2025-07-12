@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { User, Settings, LifeBuoy, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export function UserNav() {
   const { user, signOut } = useAuth();
@@ -29,7 +30,7 @@ export function UserNav() {
   }
 
   const getInitials = (name?: string | null) => {
-    if (!name) return 'U';
+    if (!name) return 'US';
     const names = name.split(' ');
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
@@ -56,13 +57,17 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Profile</span>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/profile" className="flex items-center">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/settings" className="flex items-center">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

@@ -15,7 +15,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
@@ -37,7 +36,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { CATEGORIES, CURRENCIES, CURRENCY_NAMES } from '@/lib/constants';
 import { getCategorySuggestion } from '@/lib/actions';
-import { addTransaction } from '@/lib/transactions';
+import { updateTransaction } from '@/lib/transactions';
+import type { Transaction } from '@/lib/types';
 
 const itemSchema = z.object({
   description: z.string().min(1, { message: 'Item description is required.' }),
@@ -59,12 +59,19 @@ const transactionFormSchema = z.object({
 
 type TransactionFormValues = z.infer<typeof transactionFormSchema>;
 
-interface AddTransactionDialogProps {
-  onTransactionAdded?: () => void;
+interface EditTransactionDialogProps {
+  transaction: Transaction | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onTransactionUpdated?: () => void;
 }
 
-export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditTransactionDialog({ 
+  transaction, 
+  open, 
+  onOpenChange, 
+  onTransactionUpdated 
+}: EditTransactionDialogProps) {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -118,6 +125,22 @@ export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialo
     });
   };
 
+  // Update form values when transaction changes
+  useEffect(() => {
+    if (transaction) {
+      form.reset({
+        description: transaction.description,
+        amount: transaction.amount,
+        currency: transaction.currency || 'USD', // Fallback for existing transactions
+        date: transaction.date,
+        type: transaction.type,
+        category: transaction.category,
+        hasItemDetails: transaction.hasItemDetails || false,
+        items: transaction.items || [],
+      });
+    }
+  }, [transaction, form]);
+
   const handleGetSuggestion = () => {
     const description = form.getValues('description');
     if (!description) {
@@ -149,18 +172,18 @@ export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialo
   };
 
   function onSubmit(data: TransactionFormValues) {
-    if (!user) {
+    if (!user || !transaction) {
       toast({
         variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'You must be logged in to add a transaction.',
+        title: 'Error',
+        description: 'Unable to update transaction. Please try again.',
       });
       return;
     }
 
     startTransition(async () => {
       try {
-        await addTransaction(user.uid, {
+        await updateTransaction(user.uid, transaction.id, {
           description: data.description,
           amount: data.amount,
           currency: data.currency as any,
@@ -172,38 +195,34 @@ export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialo
         });
         
         toast({
-          title: 'Transaction Added',
-          description: `${data.description} for $${data.amount} has been successfully added.`,
+          title: 'Transaction Updated',
+          description: `${data.description} for $${data.amount} has been successfully updated.`,
         });
         
-        setOpen(false);
-        form.reset();
+        onOpenChange(false);
         
         // Refresh the transactions list
-        if (onTransactionAdded) {
-          onTransactionAdded();
+        if (onTransactionUpdated) {
+          onTransactionUpdated();
         }
       } catch (error) {
-        console.error('Error adding transaction:', error);
+        console.error('Error updating transaction:', error);
         toast({
           variant: 'destructive',
           title: 'Error',
-          description: 'Failed to add transaction. Please try again.',
+          description: 'Failed to update transaction. Please try again.',
         });
       }
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Add Transaction</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>Add a new transaction</DialogTitle>
+          <DialogTitle>Edit transaction</DialogTitle>
           <DialogDescription>
-            Enter the details of your income or expense below.
+            Update the details of your income or expense below.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -505,7 +524,9 @@ export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialo
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit">Add Transaction</Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Updating...' : 'Update Transaction'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

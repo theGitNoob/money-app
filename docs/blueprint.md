@@ -1,4 +1,4 @@
-# **App Name**: BudgetWise
+# **App Name**: SigmaSpend
 
 ## Core Features:
 

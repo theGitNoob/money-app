@@ -8,7 +8,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'BudgetWise',
+  title: 'SigmaSpend',
   description: 'Smart budgeting and expense tracking.',
 };
 

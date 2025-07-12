@@ -79,7 +79,7 @@ export default function SignupPage() {
             <Logo className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
-          <CardDescription>Enter your details to get started with BudgetWise</CardDescription>
+          <CardDescription>Enter your details to get started with SigmaSpend</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>

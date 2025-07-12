@@ -157,7 +157,7 @@ export default function SettingsPage() {
       
       const link = document.createElement('a');
       link.href = url;
-      link.download = `budgetwise-export-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `SigmaSpend-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -206,7 +206,7 @@ export default function SettingsPage() {
                 <span>Appearance</span>
               </CardTitle>
               <CardDescription>
-                Customize how BudgetWise looks and feels.
+                Customize how SigmaSpend looks and feels.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

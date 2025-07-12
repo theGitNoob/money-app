@@ -18,6 +18,10 @@ export type Transaction = {
   // New fields for granular details
   items?: TransactionItem[];
   hasItemDetails?: boolean; // Flag to indicate if this transaction has detailed items
+  // Group-related fields
+  groupId?: string; // If present, this transaction belongs to a group
+  createdBy: string; // User ID who created the transaction
+  createdByName?: string; // Display name of the user who created it
 };
 
 export type Category =

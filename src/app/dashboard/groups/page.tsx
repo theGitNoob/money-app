@@ -2,7 +2,7 @@
 
 
 import { useState, useEffect } from 'react';
-import { Plus, Users, UserPlus, MoreHorizontal, Copy, Check, Trash2 } from 'lucide-react';
+import { Plus, Users, UserPlus, MoreHorizontal, Copy, Check, Trash2, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { Group, GroupInvitation } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 import { 
   collection, 
   addDoc, 
@@ -31,6 +32,7 @@ import {
 import { db } from '@/lib/firebase';
 
 export default function GroupsPage() {
+  const router = useRouter();
   const [groups, setGroups] = useState<Group[]>([]);
   const [invitations, setInvitations] = useState<GroupInvitation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -455,16 +457,21 @@ export default function GroupsPage() {
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        setSelectedGroup(group);
-                        setInviteDialogOpen(true);
-                      }}
-                    >
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Invite Member
-                    </DropdownMenuItem>
+                  <DropdownMenuContent>                  <DropdownMenuItem 
+                    onClick={() => {
+                      setSelectedGroup(group);
+                      setInviteDialogOpen(true);
+                    }}
+                  >
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Invite Member
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => router.push(`/dashboard/groups/${group.id}`)}
+                  >
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    View Transactions
+                  </DropdownMenuItem>
                     {user?.uid === group.createdBy ? (
                       <DropdownMenuItem 
                         onClick={() => deleteGroup(group)}
@@ -492,7 +499,7 @@ export default function GroupsPage() {
                   {group.members.length} member{group.members.length !== 1 ? 's' : ''}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 mb-3">
                 {group.members.slice(0, 3).map((member) => (
                   <div key={member.userId} className="flex items-center gap-1">
                     <Avatar className="h-6 w-6">
@@ -511,6 +518,15 @@ export default function GroupsPage() {
                   </span>
                 )}
               </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => router.push(`/dashboard/groups/${group.id}`)}
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                View Transactions
+              </Button>
             </CardContent>
           </Card>
         ))}

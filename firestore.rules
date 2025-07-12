@@ -20,16 +20,68 @@ service cloud.firestore {
       }
     }
 
-    // Groups collection rules - simplified for development
+    // Groups collection rules
     match /groups/{groupId} {
-      // Allow authenticated users to read, write, create, and delete groups
-      allow read, write, create, delete: if request.auth != null;
+      // Allow reading if user is a member of the group
+      allow read: if request.auth != null && 
+        (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.createdBy);
+      
+      // Allow creating groups
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.createdBy;
+      
+      // Allow updating if user is a member
+      allow update: if request.auth != null && 
+        (request.auth.uid in resource.data.memberIds || request.auth.uid == resource.data.createdBy);
+      
+      // Allow deleting if user is the creator
+      allow delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
+
+      // Group transactions subcollection
+      match /transactions/{transactionId} {
+        // Allow reading group transactions if user is a group member
+        allow read: if request.auth != null && 
+          (request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds);
+        
+        // Allow creating group transactions if user is a group member
+        allow create: if request.auth != null && 
+          (request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds) &&
+          request.auth.uid == request.resource.data.createdBy;
+        
+        // Allow updating group transactions if user is a group member and created the transaction
+        allow update: if request.auth != null && 
+          (request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds) &&
+          request.auth.uid == resource.data.createdBy;
+        
+        // Allow deleting group transactions if user is a group member and created the transaction or is group admin
+        allow delete: if request.auth != null && 
+          (request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds) &&
+          (request.auth.uid == resource.data.createdBy || 
+           request.auth.uid == get(/databases/$(database)/documents/groups/$(groupId)).data.createdBy);
+      }
     }
 
-    // Invitations collection rules - simplified for development
+    // Invitations collection rules
     match /invitations/{invitationId} {
-      // Allow authenticated users to read, write, create, and delete invitations
-      allow read, write, create, delete: if request.auth != null;
+      // Allow reading invitations for the invited email or group members
+      allow read: if request.auth != null && 
+        (request.auth.token.email == resource.data.invitedEmail || 
+         request.auth.uid == resource.data.invitedBy ||
+         request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.memberIds);
+      
+      // Allow creating invitations if user is a group member
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.invitedBy &&
+        (request.auth.uid in get(/databases/$(database)/documents/groups/$(request.resource.data.groupId)).data.memberIds);
+      
+      // Allow updating invitations if user is the invitee (to accept/reject)
+      allow update: if request.auth != null && 
+        (request.auth.token.email == resource.data.invitedEmail || 
+         request.auth.uid == resource.data.invitedBy);
+      
+      // Allow deleting invitations if user is the inviter or group admin
+      allow delete: if request.auth != null && 
+        (request.auth.uid == resource.data.invitedBy ||
+         request.auth.uid == get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.createdBy);
     }
   }
 }

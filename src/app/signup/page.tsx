@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/icons';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,21 +14,28 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 
-const loginSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-});
+const signupSchema = z
+  .object({
+    email: z.string().email({ message: 'Invalid email address.' }),
+    password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
-export default function LoginPage() {
-  const { user, signInWithEmail, signInWithGoogle } = useAuth();
+export default function SignupPage() {
+  const { user, signUpWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof signupSchema>>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
@@ -39,19 +45,19 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
-  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof signupSchema>) => {
     try {
-      await signInWithEmail(values.email, values.password);
+      await signUpWithEmail(values.email, values.password);
       router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Login Failed',
+        title: 'Sign Up Failed',
         description: error.message,
       });
     }
   };
-  
+
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
@@ -72,8 +78,8 @@ export default function LoginPage() {
           <div className="mb-4 flex justify-center">
             <Logo className="h-10 w-10 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Welcome Back!</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardTitle className="text-2xl">Create an Account</CardTitle>
+          <CardDescription>Enter your details to get started with BudgetWise</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -96,12 +102,20 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center">
-                      <FormLabel>Password</FormLabel>
-                      <Link href="#" className="ml-auto inline-block text-sm underline">
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
@@ -110,22 +124,22 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full">
-                Sign in
+                Create Account
               </Button>
             </form>
           </Form>
           <div className="my-4 flex items-center">
             <div className="flex-grow border-t border-muted" />
-            <span className="mx-4 text-xs uppercase text-muted-foreground">Or continue with</span>
+            <span className="mx-4 text-xs uppercase text-muted-foreground">Or sign up with</span>
             <div className="flex-grow border-t border-muted" />
           </div>
           <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-            Sign in with Google
+            Sign up with Google
           </Button>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="underline">
-              Sign up
+            Already have an account?{' '}
+            <Link href="/login" className="underline">
+              Sign in
             </Link>
           </div>
         </CardContent>

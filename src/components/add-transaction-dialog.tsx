@@ -40,7 +40,7 @@ const transactionFormSchema = z.object({
   amount: z.coerce.number().positive({ message: 'Amount must be positive.' }),
   date: z.date(),
   type: z.enum(['income', 'expense']),
-  category: z.enum(CATEGORIES),
+  category: z.enum(CATEGORIES as [string, ...string[]]),
 });
 
 type TransactionFormValues = z.infer<typeof transactionFormSchema>;

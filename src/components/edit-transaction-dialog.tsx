@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -97,24 +97,32 @@ export function EditTransactionDialog({
 
   const hasItemDetails = form.watch('hasItemDetails');
   const items = form.watch('items');
+  const currency = form.watch('currency');
 
-  // Calculate total amount from items when item details are enabled
-  const calculateTotalFromItems = () => {
-    if (!hasItemDetails || !items) return 0;
-    return items.reduce((total, item) => {
+  // Calculate total amount from items.
+  // This is now a stable function thanks to useCallback.
+  const calculateTotalFromItems = useCallback((currentItems: typeof items) => {
+    if (!currentItems) return 0;
+    return currentItems.reduce((total, item) => {
       const quantity = Number(item.quantity) || 0;
       const unitPrice = Number(item.unitPrice) || 0;
       return total + (quantity * unitPrice);
     }, 0);
-  };
+  }, []);
 
-  // Update amount when items change
+  // This is the calculated total based on the current form state.
+  const calculatedTotal = hasItemDetails ? calculateTotalFromItems(items) : 0;
+
+  // Update the 'amount' field in the form whenever the calculated total changes.
   useEffect(() => {
     if (hasItemDetails) {
-      const total = calculateTotalFromItems();
-      form.setValue('amount', total);
+      // We compare with the current form value to avoid unnecessary re-renders/triggering loops.
+      if (form.getValues('amount') !== calculatedTotal) {
+        form.setValue('amount', calculatedTotal, { shouldValidate: true });
+      }
     }
-  }, [hasItemDetails, items, form]);
+  }, [hasItemDetails, calculatedTotal, form]);
+
 
   const addItem = () => {
     append({
@@ -485,7 +493,7 @@ export function EditTransactionDialog({
                   )}
                   {hasItemDetails && (
                     <div className="text-right text-sm text-muted-foreground">
-                      Total: {form.watch('currency') && formatCurrency(calculateTotalFromItems(), form.watch('currency') as any)}
+                      Total: {currency && formatCurrency(calculatedTotal, currency as any)}
                     </div>
                   )}
                 </CardContent>

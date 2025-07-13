@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -99,6 +99,20 @@ export function EditGroupTransactionDialog({
   const watchItems = form.watch('items');
   const watchCurrency = form.watch('currency');
 
+  // Calculate total amount from items.
+  // This is now a stable function thanks to useCallback.
+  const calculateTotalFromItems = useCallback((currentItems: typeof watchItems) => {
+    if (!currentItems) return 0;
+    return currentItems.reduce((total, item) => {
+      const quantity = Number(item.quantity) || 0;
+      const unitPrice = Number(item.unitPrice) || 0;
+      return total + (quantity * unitPrice);
+    }, 0);
+  }, []);
+
+  // This is the calculated total based on the current form state.
+  const calculatedTotal = watchHasItemDetails ? calculateTotalFromItems(watchItems) : 0;
+
   // Update form values when transaction changes
   useEffect(() => {
     if (transaction) {
@@ -119,15 +133,15 @@ export function EditGroupTransactionDialog({
     }
   }, [transaction, form, replace]);
 
-  // Calculate total from items when item details are enabled
+  // Update the 'amount' field in the form whenever the calculated total changes.
   useEffect(() => {
-    if (watchHasItemDetails && watchItems) {
-      const total = watchItems.reduce((sum, item) => {
-        return sum + (item.quantity * item.unitPrice);
-      }, 0);
-      form.setValue('amount', total);
+    if (watchHasItemDetails) {
+      // We compare with the current form value to avoid unnecessary re-renders/triggering loops.
+      if (form.getValues('amount') !== calculatedTotal) {
+        form.setValue('amount', calculatedTotal, { shouldValidate: true });
+      }
     }
-  }, [watchHasItemDetails, watchItems, form]);
+  }, [watchHasItemDetails, calculatedTotal, form]);
 
   const handleGetSuggestion = () => {
     const description = form.getValues('description');
@@ -364,7 +378,7 @@ export function EditGroupTransactionDialog({
                 {watchHasItemDetails && (
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground">
-                      Total: {formatCurrency(form.watch('amount'), watchCurrency as Currency)}
+                      Total: {formatCurrency(calculatedTotal, watchCurrency as Currency)}
                     </p>
                   </div>
                 )}

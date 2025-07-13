@@ -166,11 +166,25 @@ export function EditGroupTransactionDialog({
 
     startTransition(async () => {
       try {
-        await updateGroupTransaction(groupId, transaction.id, {
-          ...data,
+        const updateData: any = {
+          description: data.description,
+          amount: data.amount,
           currency: data.currency as Currency,
+          date: data.date,
+          type: data.type,
           category: data.category as Category,
-        });
+          hasItemDetails: data.hasItemDetails,
+        };
+
+        // Only include items if hasItemDetails is true and items exist
+        if (data.hasItemDetails && data.items && data.items.length > 0) {
+          updateData.items = data.items;
+        } else {
+          // When hasItemDetails is false, we should remove the items field
+          updateData.items = null; // Use null to remove the field in Firestore
+        }
+
+        await updateGroupTransaction(groupId, transaction.id, updateData);
         
         toast({
           title: 'Transaction updated',

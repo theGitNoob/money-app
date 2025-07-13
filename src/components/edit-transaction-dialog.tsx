@@ -183,7 +183,7 @@ export function EditTransactionDialog({
 
     startTransition(async () => {
       try {
-        await updateTransaction(user.uid, transaction.id, {
+        const updateData: any = {
           description: data.description,
           amount: data.amount,
           currency: data.currency as Currency,
@@ -191,8 +191,17 @@ export function EditTransactionDialog({
           type: data.type,
           category: data.category as Category,
           hasItemDetails: data.hasItemDetails,
-          items: data.hasItemDetails ? data.items : undefined,
-        });
+        };
+
+        // Only include items if hasItemDetails is true and items exist
+        if (data.hasItemDetails && data.items && data.items.length > 0) {
+          updateData.items = data.items;
+        } else {
+          // When hasItemDetails is false, we should remove the items field
+          updateData.items = null; // Use null to remove the field in Firestore
+        }
+
+        await updateTransaction(user.uid, transaction.id, updateData);
         
         toast({
           title: 'Transaction Updated',

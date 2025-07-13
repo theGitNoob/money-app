@@ -161,7 +161,7 @@ export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialo
 
     startTransition(async () => {
       try {
-        await addTransaction(user.uid, {
+        const transactionData: any = {
           description: data.description,
           amount: data.amount,
           currency: data.currency as Currency,
@@ -169,10 +169,16 @@ export function AddTransactionDialog({ onTransactionAdded }: AddTransactionDialo
           type: data.type,
           category: data.category as Category,
           hasItemDetails: data.hasItemDetails,
-          items: data.hasItemDetails ? data.items : undefined,
           createdBy: user.uid,
           createdByName: user.displayName || user.email?.split('@')[0] || 'User',
-        });
+        };
+
+        // Only include items if hasItemDetails is true and items exist
+        if (data.hasItemDetails && data.items && data.items.length > 0) {
+          transactionData.items = data.items;
+        }
+
+        await addTransaction(user.uid, transactionData);
         
         toast({
           title: 'Transaction Added',

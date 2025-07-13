@@ -140,13 +140,22 @@ export function AddGroupTransactionDialog({ groupId, onTransactionAdded }: AddGr
 
     startTransition(async () => {
       try {
-        const transactionData = {
-          ...data,
+        const transactionData: any = {
+          description: data.description,
+          amount: data.amount,
           currency: data.currency as Currency,
+          date: data.date,
+          type: data.type,
           category: data.category as Category,
+          hasItemDetails: data.hasItemDetails,
           createdBy: user.uid,
           createdByName: user.displayName || user.email?.split('@')[0] || 'User',
         };
+
+        // Only include items if hasItemDetails is true and items exist
+        if (data.hasItemDetails && data.items && data.items.length > 0) {
+          transactionData.items = data.items;
+        }
 
         await addGroupTransaction(groupId, transactionData);
         

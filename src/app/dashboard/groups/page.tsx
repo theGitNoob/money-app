@@ -220,7 +220,8 @@ export default function GroupsPage() {
           displayName: user.displayName || user.email?.split('@')[0] || 'User',
           role: 'member',
           joinedAt: Timestamp.now()
-        })
+        }),
+        memberIds: arrayUnion(user.uid) // Add to memberIds for security rules and queries
       });
 
       // Update invitation status

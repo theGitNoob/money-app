@@ -8,7 +8,8 @@ import {
   updateDoc,
   arrayUnion,
   deleteDoc,
-  Timestamp 
+  Timestamp,
+  arrayRemove
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { Group, GroupInvitation, GroupMember } from './types';
@@ -27,6 +28,7 @@ export const groupService = {
         role: 'admin' as const,
         joinedAt: Timestamp.now()
       }],
+      memberIds: [creatorId],
       invitations: []
     };
 
@@ -68,7 +70,8 @@ export const groupService = {
         displayName: userDisplayName,
         role: 'member' as const,
         joinedAt: Timestamp.now()
-      })
+      }),
+      memberIds: arrayUnion(userId)
     });
 
     // Update invitation status
@@ -100,7 +103,8 @@ export const groupService = {
     } else {
       // Update group members
       await updateDoc(doc(db, 'groups', groupId), {
-        members: updatedMembers
+        members: updatedMembers,
+        memberIds: arrayRemove(userId)
       });
       return false; // Group still exists
     }
